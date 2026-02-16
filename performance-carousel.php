@@ -101,8 +101,8 @@ add_shortcode('pf_carousel', 'pf_carousel_shortcode');
 // Admin menu
 add_action('admin_menu', function() {
     add_menu_page(
-        'Performance Carousel',
-        'Performance Carousel',
+        'Beehivehub Carousel',
+        'Beehivehub Carousel',
         'manage_options',
         'pf-carousel-settings',
         'pf_render_admin_page',
@@ -201,7 +201,7 @@ add_action('wp_ajax_pf_create_carousel', function() {
 
     update_post_meta($post_id, $meta_key, $config);
 
-    wp_send_json_success();
+    wp_send_json_success(['post_id' => $post_id]);
 });
 
 // Enqueue admin assets
