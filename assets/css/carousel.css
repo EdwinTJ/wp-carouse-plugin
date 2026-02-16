@@ -33,7 +33,7 @@
 .pf-next {
   position: absolute;
   top: 50%;
-  transform: translateY(-50%);
+  translate: 0 -50%;
   background: rgba(0,0,0,0.5);
   color: white;
   border: none;
@@ -71,6 +71,7 @@
 .pf-placement-below > .pf-nav-bar .pf-next {
   position: static;
   transform: none;
+  translate: none;
 }
 
 /* ── Nav Placement: above ── */
@@ -99,24 +100,43 @@
 .pf-placement-above > .pf-nav-bar .pf-next {
   position: static;
   transform: none;
+  translate: none;
 }
 
 /* ── Nav Placement: split-side ── */
-/* Like overlay but arrows sit just outside the carousel edges */
-.pf-placement-split-side .pf-carousel {
-  overflow: visible;
+/* Buttons sit outside the carousel edges, vertically centered */
+.pf-placement-split-side {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-.pf-placement-split-side .pf-track {
-  overflow: hidden;
+.pf-placement-split-side > .pf-carousel {
+  flex: 1;
+  min-width: 0;
+  order: 1;
 }
 
-.pf-placement-split-side .pf-prev {
-  left: -48px;
+.pf-placement-split-side > .pf-prev {
+  position: static;
+  transform: none;
+  translate: none;
+  flex-shrink: 0;
+  order: 0;
 }
 
-.pf-placement-split-side .pf-next {
-  right: -48px;
+.pf-placement-split-side > .pf-next {
+  position: static;
+  transform: none;
+  translate: none;
+  flex-shrink: 0;
+  order: 2;
+}
+
+.pf-placement-split-side > .pf-dots {
+  flex-basis: 100%;
+  order: 3;
 }
 
 /* ── Dot Indicators ── */

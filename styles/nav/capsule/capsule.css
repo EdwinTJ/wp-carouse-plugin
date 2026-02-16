@@ -23,5 +23,5 @@
 .pf-nav-capsule .pf-prev:hover,
 .pf-nav-capsule .pf-next:hover {
   background: var(--pf-nav-bg_color, rgba(0,0,0,0.8));
-  transform: translateY(-50%) scale(1.05);
+  transform: scale(1.05);
 }

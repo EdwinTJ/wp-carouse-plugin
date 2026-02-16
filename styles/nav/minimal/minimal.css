@@ -19,12 +19,12 @@
 }
 
 .pf-nav-minimal .pf-prev {
-  transform: translateY(-50%) rotate(135deg);
+  transform: rotate(135deg);
   left: 12px;
 }
 
 .pf-nav-minimal .pf-next {
-  transform: translateY(-50%) rotate(-45deg);
+  transform: rotate(-45deg);
   right: 12px;
 }
 

@@ -15,8 +15,8 @@ return [
     'description' => 'Simple thin arrows',
     'tier'        => 'free',
     'content'     => [
-        'prev_html' => '<span class="pf-chevron-left"></span>',
-        'next_html' => '<span class="pf-chevron-right"></span>',
+        'prev_html' => '',
+        'next_html' => '',
     ],
     'options'     => [
         'arrow_size'  => ['type' => 'number', 'label' => 'Arrow Size (px)',  'default' => 24],

@@ -57,8 +57,9 @@ function pf_carousel_shortcode($atts) {
     $nav_placement = $config['nav_placement'] ?? 'overlay';
     $show_dots = ($config['show_dots'] ?? 'false') === 'true';
 
-    $classes = 'pf-carousel pf-style-' . esc_attr($carousel_style) . ' pf-nav-' . esc_attr($nav_style);
-    $wrap_classes = 'pf-carousel-wrap pf-placement-' . esc_attr($nav_placement);
+    // Nav class goes on wrapper so nav CSS applies to buttons regardless of placement
+    $classes = 'pf-carousel pf-style-' . esc_attr($carousel_style);
+    $wrap_classes = 'pf-carousel-wrap pf-placement-' . esc_attr($nav_placement) . ' pf-nav-' . esc_attr($nav_style);
 
     pf_enqueue_style_assets('carousel', $carousel_style);
     pf_enqueue_style_assets('nav', $nav_style);
@@ -76,15 +77,18 @@ function pf_carousel_shortcode($atts) {
         if (!empty($nav_opts['next_text'])) $next_html = esc_html($nav_opts['next_text']);
     }
 
-    // Build inline CSS variables from style options
-    $css_vars = [];
+    // Carousel CSS vars on .pf-carousel, nav CSS vars on wrapper
+    $carousel_css_vars = [];
     foreach ($config['carousel_style_options'] ?? [] as $key => $val) {
-        $css_vars[] = '--pf-' . esc_attr($key) . ':' . esc_attr($val) . (is_numeric($val) ? 'px' : '');
+        $carousel_css_vars[] = '--pf-' . esc_attr($key) . ':' . esc_attr($val) . (is_numeric($val) ? 'px' : '');
     }
+    $carousel_inline = !empty($carousel_css_vars) ? implode(';', $carousel_css_vars) : '';
+
+    $nav_css_vars = [];
     foreach ($config['nav_style_options'] ?? [] as $key => $val) {
-        $css_vars[] = '--pf-nav-' . esc_attr($key) . ':' . esc_attr($val) . (is_numeric($val) ? 'px' : '');
+        $nav_css_vars[] = '--pf-nav-' . esc_attr($key) . ':' . esc_attr($val) . (is_numeric($val) ? 'px' : '');
     }
-    $inline_style = !empty($css_vars) ? implode(';', $css_vars) : '';
+    $nav_inline = !empty($nav_css_vars) ? implode(';', $nav_css_vars) : '';
 
     $dots_html = '';
     if ($show_dots && count($images) > 1) {
@@ -97,9 +101,13 @@ function pf_carousel_shortcode($atts) {
     }
 
     ob_start(); ?>
-    <div class="<?php echo $wrap_classes; ?>">
+    <div class="<?php echo $wrap_classes; ?>"
+         <?php if ($nav_inline): ?>style="<?php echo $nav_inline; ?>"<?php endif; ?>>
+        <?php if ($nav_placement === 'split-side'): ?>
+        <button class="pf-prev" type="button"><?php echo $prev_html; ?></button>
+        <?php endif; ?>
         <div class="<?php echo $classes; ?>"
-             <?php if ($inline_style): ?>style="<?php echo $inline_style; ?>"<?php endif; ?>
+             <?php if ($carousel_inline): ?>style="<?php echo $carousel_inline; ?>"<?php endif; ?>
              data-config='<?php echo json_encode([
                 'slidesToShow'=>1,
                 'autoplay'=>$config['autoplay'] ?? true,
@@ -118,19 +126,22 @@ function pf_carousel_shortcode($atts) {
                 }
                 ?>
             </div>
-            <?php if ($nav_placement === 'overlay' || $nav_placement === 'split-side'): ?>
+            <?php if ($nav_placement === 'overlay'): ?>
             <button class="pf-prev" type="button"><?php echo $prev_html; ?></button>
             <button class="pf-next" type="button"><?php echo $next_html; ?></button>
             <?php echo $dots_html; ?>
             <?php endif; ?>
         </div>
+        <?php if ($nav_placement === 'split-side'): ?>
+        <button class="pf-next" type="button"><?php echo $next_html; ?></button>
+        <?php endif; ?>
         <?php if ($nav_placement === 'below' || $nav_placement === 'above'): ?>
         <div class="pf-nav-bar">
             <button class="pf-prev" type="button"><?php echo $prev_html; ?></button>
             <button class="pf-next" type="button"><?php echo $next_html; ?></button>
         </div>
         <?php endif; ?>
-        <?php if ($nav_placement !== 'overlay' && $nav_placement !== 'split-side') echo $dots_html; ?>
+        <?php if ($nav_placement !== 'overlay') echo $dots_html; ?>
     </div>
     <?php
 
