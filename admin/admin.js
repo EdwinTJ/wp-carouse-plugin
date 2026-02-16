@@ -49,32 +49,26 @@ jQuery(document).ready(($) => {
         const autoplay = row.find('.col-autoplay select').val();
         const autoplayDelay = row.find('.col-autoplayDelay input').val();
 
-        $.ajax({
-            url: ajaxurl,
-            method: 'POST',
-            data: JSON.stringify({
-                action: 'pf_update_carousel_config',
-                post_id,
-                edit_id,
-                autoplay,
-                autoplayDelay
-            }),
-            contentType: 'application/json',
-            success: function(res){
-                if(res.success){
-                    // Update table cells with new values
-                    row.find('.col-autoplay').text(autoplay);
-                    row.find('.col-autoplayDelay').text(autoplayDelay);
+        $.post(ajaxurl, {
+            action: 'pf_update_carousel_config',
+            post_id: post_id,
+            edit_id: edit_id,
+            autoplay: autoplay,
+            autoplayDelay: autoplayDelay
+        }, function(res){
+            if(res.success){
+                // Update table cells with new values
+                row.find('.col-autoplay').text(autoplay);
+                row.find('.col-autoplayDelay').text(autoplayDelay);
 
-                    // Remove editing highlight
-                    row.removeClass('editing');
+                // Remove editing highlight
+                row.removeClass('editing');
 
-                    // Toggle action buttons
-                    row.find('.pf-edit-inline').show();
-                    row.find('.pf-save-inline, .pf-cancel-inline').hide();
-                } else {
-                    alert('Error updating carousel.');
-                }
+                // Toggle action buttons
+                row.find('.pf-edit-inline').show();
+                row.find('.pf-save-inline, .pf-cancel-inline').hide();
+            } else {
+                alert('Error updating carousel.');
             }
         });
     });
@@ -114,6 +108,82 @@ jQuery(document).ready(($) => {
         } catch (err) {
             alert('Failed to copy shortcode');
         }
+    });
+    
+    // Media Library toggle
+    $('#pf-image-source').on('change', function(){
+        const val = $(this).val();
+        if(val === 'media'){
+            $('#pf-media-library-section').show();
+            $('#pf-url-section').hide();
+        } else {
+            $('#pf-media-library-section').hide();
+            $('#pf-url-section').show();
+        }
+    });
+
+    // WP Media Library
+    let pf_media_frame;
+    $('#pf-add-images').on('click', function(e){
+        e.preventDefault();
+        if(pf_media_frame){
+            pf_media_frame.open();
+            return;
+        }
+
+        pf_media_frame = wp.media({
+            title: 'Select Images',
+            button: { text: 'Add to Carousel' },
+            multiple: true
+        });
+
+        pf_media_frame.on('select', function(){
+            const selection = pf_media_frame.state().get('selection');
+            const ul = $('#pf-selected-images');
+            ul.empty();
+            selection.map(function(attachment){
+                attachment = attachment.toJSON();
+                ul.append(`<li data-id="${attachment.id}"><img src="${attachment.url}" width="100" /> ${attachment.url}</li>`);
+            });
+        });
+
+        pf_media_frame.open();
+    });
+
+    // Save full config form
+    $('#pf-full-config-form').on('submit', function(e){
+        e.preventDefault();
+        const post_id = new URLSearchParams(window.location.search).get('post');
+        const edit_id = new URLSearchParams(window.location.search).get('id');
+        const autoplay = $(this).find('select[name="pf_autoplay"]').val();
+        const autoplayDelay = $(this).find('input[name="pf_autoplayDelay"]').val();
+
+        let images = [];
+        if($('#pf-image-source').val() === 'media'){
+            $('#pf-selected-images li').each(function(){
+                images.push($(this).data('id'));
+            });
+        } else {
+            $('#pf-image-urls').val().split("\n").forEach(url => {
+                if(url.trim()) images.push(url.trim());
+            });
+        }
+
+        $.post(ajaxurl, {
+            action: 'pf_update_carousel_config',
+            post_id: post_id,
+            edit_id: edit_id,
+            autoplay: autoplay,
+            autoplayDelay: autoplayDelay,
+            images: images
+        }, function(res){
+            if(res.success){
+                alert('Carousel saved!');
+                location.reload();
+            } else {
+                alert('Error saving carousel.');
+            }
+        });
     });
 
 });
