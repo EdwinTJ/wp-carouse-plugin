@@ -92,6 +92,35 @@ add_action('wp_ajax_pf_update_carousel_config', function() {
     wp_send_json_success();
 });
 
+add_action('wp_ajax_pf_create_carousel', function() {
+    $id = sanitize_text_field($_POST['pf_new_id']);
+    $autoplay = sanitize_text_field($_POST['pf_new_autoplay']);
+    $autoplayDelay = intval($_POST['pf_new_autoplayDelay']);
+
+    if (!$id) wp_send_json_error('Missing ID');
+
+    // You can store new carousel in a hidden "Carousel Library" post or just in options for now
+    // For simplicity, let's create a dummy post for storing it
+    $post_id = wp_insert_post([
+        'post_title' => 'Carousel ' . $id,
+        'post_status' => 'publish',
+        'post_type' => 'post'
+    ]);
+
+    if (!$post_id) wp_send_json_error('Failed to create post');
+
+    $meta_key = '_pf_carousel_config_' . $id;
+    $config = [
+        'id' => $id,
+        'autoplay' => $autoplay,
+        'autoplayDelay' => $autoplayDelay
+    ];
+
+    update_post_meta($post_id, $meta_key, $config);
+
+    wp_send_json_success();
+});
+
 // Enqueue admin assets
 add_action('admin_enqueue_scripts', function($hook) {
     if ($hook !== 'toplevel_page_pf-carousel-settings') return;

@@ -1,7 +1,42 @@
+/* General page spacing */
 .wrap h1 {
     margin-bottom: 20px;
 }
 
+/* Form table headers width */
 .form-table th {
     width: 200px;
+}
+
+/* Inline editable row highlight */
+#pf-shortcodes-table tr.editing {
+    background-color: #fff9c4; /* Light yellow highlight */
+}
+
+/* Table inputs and selects */
+#pf-shortcodes-table input[type="number"],
+#pf-shortcodes-table select {
+    width: 100px;
+}
+
+/* Inline action links styling */
+#pf-shortcodes-table a.pf-edit-inline,
+#pf-shortcodes-table a.pf-save-inline,
+#pf-shortcodes-table a.pf-cancel-inline {
+    margin-right: 5px;
+    text-decoration: none;
+}
+
+#pf-shortcodes-table a.pf-edit-inline:hover,
+#pf-shortcodes-table a.pf-save-inline:hover,
+#pf-shortcodes-table a.pf-cancel-inline:hover {
+    text-decoration: underline;
+    color: #0073aa;
+}
+
+/* Create new carousel form */
+#pf-new-carousel-form input[type="text"],
+#pf-new-carousel-form input[type="number"],
+#pf-new-carousel-form select {
+    width: 150px;
 }

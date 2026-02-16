@@ -2,24 +2,70 @@
 if (!defined('ABSPATH')) exit;
 
 function pf_render_admin_page() {
-    // Tabs
     $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'shortcodes';
 
+    // If user clicks Config for a specific carousel
+    if ($active_tab === 'config' && isset($_GET['id'], $_GET['post'])) {
+        $carousel_id = sanitize_text_field($_GET['id']);
+        $post_id = intval($_GET['post']);
+        $meta_key = '_pf_carousel_config_' . $carousel_id;
+        $config = get_post_meta($post_id, $meta_key, true);
+
+        ?>
+        <div class="wrap">
+            <h1>Carousel Config: <?php echo esc_html($carousel_id); ?></h1>
+
+            <h2>Settings (placeholders for now)</h2>
+            <form id="pf-full-config-form">
+                <table class="form-table">
+                    <tr>
+                        <th>Autoplay</th>
+                        <td>
+                            <select name="pf_autoplay">
+                                <option value="true" <?php selected($config['autoplay'],'true'); ?>>True</option>
+                                <option value="false" <?php selected($config['autoplay'],'false'); ?>>False</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Autoplay Delay (ms)</th>
+                        <td>
+                            <input type="number" name="pf_autoplayDelay" value="<?php echo esc_attr($config['autoplayDelay']); ?>">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Other Options</th>
+                        <td>
+                            <!-- Placeholders for future options -->
+                            <em>Coming soon...</em>
+                        </td>
+                    </tr>
+                </table>
+                <?php submit_button('Save Carousel'); ?>
+            </form>
+        </div>
+        <?php
+        return; // Skip the main tabs
+    }
+
     ?>
+
     <div class="wrap">
         <h1>Performance Carousel Settings</h1>
         <h2 class="nav-tab-wrapper">
             <a href="?page=pf-carousel-settings&tab=shortcodes" class="nav-tab <?php echo $active_tab=='shortcodes'?'nav-tab-active':''; ?>">Shortcodes</a>
+            <a href="?page=pf-carousel-settings&tab=create" class="nav-tab <?php echo $active_tab=='create'?'nav-tab-active':''; ?>">Create New Carousel</a>
             <a href="?page=pf-carousel-settings&tab=global" class="nav-tab <?php echo $active_tab=='global'?'nav-tab-active':''; ?>">Global Defaults</a>
         </h2>
 
         <?php if ($active_tab == 'shortcodes'): ?>
             <h2>Carousel Shortcodes</h2>
-            <table class="wp-list-table widefat fixed striped">
+            <table class="wp-list-table widefat fixed striped" id="pf-shortcodes-table">
                 <thead>
                     <tr>
                         <th>Post/Page</th>
                         <th>Carousel ID</th>
+                        <th>Shortcode</th>
                         <th>Autoplay</th>
                         <th>Autoplay Delay</th>
                         <th>Actions</th>
@@ -27,22 +73,30 @@ function pf_render_admin_page() {
                 </thead>
                 <tbody>
                     <?php
-                    // Query all posts/pages to find carousel shortcodes
-                    $all_posts = get_posts(['post_type' => ['post','page'], 'numberposts' => -1]);
+                    $all_posts = get_posts(['post_type'=>['post','page'], 'numberposts'=>-1]);
                     foreach ($all_posts as $post):
-                        // Find all pf_carousel meta keys
                         $meta = get_post_meta($post->ID);
                         foreach ($meta as $key => $value):
                             if (strpos($key, '_pf_carousel_config_') === 0):
                                 $config = maybe_unserialize($value[0]);
+                                $shortcode = '[pf_carousel id="' . esc_attr($config['id']) . '"]';
                                 ?>
-                                    <tr data-id="<?php echo esc_attr($config['id']); ?>">
-                                        <td><?php echo esc_html($post->post_title); ?></td>
-                                        <td><?php echo esc_html($config['id']); ?></td>
-                                        <td class="col-autoplay"><?php echo esc_html($config['autoplay']); ?></td>
-                                        <td class="col-autoplayDelay"><?php echo esc_html($config['autoplayDelay']); ?></td>
-                                        <td><a href="#" class="pf-edit-link" data-id="<?php echo esc_attr($config['id']); ?>">Edit</a></td>
-                                    </tr>
+                                <tr data-id="<?php echo esc_attr($config['id']); ?>" data-post="<?php echo $post->ID; ?>">
+                                    <td><?php echo esc_html($post->post_title); ?></td>
+                                    <td><?php echo esc_html($config['id']); ?></td>
+                                    <td class="col-shortcode">
+                                        <input type="text" readonly value="<?php echo esc_attr($shortcode); ?>" />
+                                        <button class="pf-copy-shortcode button">Copy</button>
+                                    </td>
+                                    <td class="col-autoplay"><?php echo esc_html($config['autoplay']); ?></td>
+                                    <td class="col-autoplayDelay"><?php echo esc_html($config['autoplayDelay']); ?></td>
+                                    <td>
+                                        <a href="#" class="pf-edit-inline">Edit</a> |
+                                        <a href="#" class="pf-save-inline" style="display:none;">Save</a> |
+                                        <a href="#" class="pf-cancel-inline" style="display:none;">Cancel</a> |
+                                        <a href="?page=pf-carousel-settings&tab=config&id=<?php echo esc_attr($config['id']); ?>&post=<?php echo $post->ID; ?>">Config</a>
+                                    </td>
+                                </tr>
                             <?php
                             endif;
                         endforeach;
@@ -51,46 +105,32 @@ function pf_render_admin_page() {
                 </tbody>
             </table>
 
-            <?php
-            // Edit form
-            if (isset($_GET['edit'])):
-                $edit_id = sanitize_text_field($_GET['edit']);
-                foreach ($all_posts as $post) {
-                    $meta_key = '_pf_carousel_config_' . $edit_id;
-                    $config = get_post_meta($post->ID, $meta_key, true);
-                    if ($config) {
-                        ?>
-                        <h3>Edit Carousel <?php echo esc_html($edit_id); ?> (Post: <?php echo esc_html($post->post_title); ?>)</h3>
-                        <form method="post">
-                            <input type="hidden" name="pf_edit_id" value="<?php echo esc_attr($edit_id); ?>">
-                            <input type="hidden" name="pf_post_id" value="<?php echo esc_attr($post->ID); ?>">
-                            <table class="form-table">
-                                <tr>
-                                    <th>Autoplay</th>
-                                    <td>
-                                        <select name="pf_autoplay">
-                                            <option value="true" <?php selected($config['autoplay'], 'true'); ?>>True</option>
-                                            <option value="false" <?php selected($config['autoplay'], 'false'); ?>>False</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Autoplay Delay</th>
-                                    <td>
-                                        <input type="number" name="pf_autoplayDelay" value="<?php echo esc_attr($config['autoplayDelay']); ?>">
-                                    </td>
-                                </tr>
-                            </table>
-                            <?php submit_button('Save Carousel'); ?>
-                        </form>
-                        <?php
-                        break;
-                    }
-                }
-            endif;
-            ?>
+        <?php elseif ($active_tab == 'create'): ?>
+            <h2>Create New Carousel</h2>
+            <form id="pf-new-carousel-form">
+                <table class="form-table">
+                    <tr>
+                        <th>Carousel ID</th>
+                        <td><input type="text" name="pf_new_id" required /></td>
+                    </tr>
+                    <tr>
+                        <th>Autoplay</th>
+                        <td>
+                            <select name="pf_new_autoplay">
+                                <option value="true">True</option>
+                                <option value="false">False</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Autoplay Delay</th>
+                        <td><input type="number" name="pf_new_autoplayDelay" value="3000" /></td>
+                    </tr>
+                </table>
+                <?php submit_button('Create Carousel'); ?>
+            </form>
 
-        <?php else: // Global Defaults ?>
+        <?php else: // global defaults ?>
             <h2>Global Defaults</h2>
             <form method="post" action="options.php">
                 <?php
@@ -122,23 +162,3 @@ function pf_render_admin_page() {
     </div>
     <?php
 }
-
-// Save edits for shortcode-specific settings
-add_action('admin_init', function() {
-    if (isset($_POST['pf_edit_id'], $_POST['pf_post_id'])) {
-        $edit_id = sanitize_text_field($_POST['pf_edit_id']);
-        $post_id = intval($_POST['pf_post_id']);
-        $meta_key = '_pf_carousel_config_' . $edit_id;
-
-        $config = [
-            'id' => $edit_id,
-            'autoplay' => sanitize_text_field($_POST['pf_autoplay']),
-            'autoplayDelay' => intval($_POST['pf_autoplayDelay']),
-        ];
-        update_post_meta($post_id, $meta_key, $config);
-
-        // Redirect to avoid resubmission
-        wp_redirect(admin_url('admin.php?page=pf-carousel-settings&tab=shortcodes'));
-        exit;
-    }
-});
