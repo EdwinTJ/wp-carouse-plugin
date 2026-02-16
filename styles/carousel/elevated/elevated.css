@@ -1,0 +1,12 @@
+/**
+ * Carousel Style: Elevated Shadow
+ *
+ * Uses CSS custom properties set inline by the shortcode renderer:
+ *   --pf-border_radius, --pf-shadow_blur, --pf-shadow_spread, --pf-shadow_color
+ */
+.pf-style-elevated {
+  border-radius: var(--pf-border_radius, 12px);
+  overflow: hidden;
+  box-shadow:
+    0 4px var(--pf-shadow_blur, 20px) var(--pf-shadow_spread, 0px) var(--pf-shadow_color, rgba(0,0,0,0.3));
+}

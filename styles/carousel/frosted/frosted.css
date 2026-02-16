@@ -1,0 +1,32 @@
+/**
+ * Carousel Style: Frosted Glass
+ *
+ * Uses CSS custom properties set inline by the shortcode renderer:
+ *   --pf-outline_width, --pf-outline_color, --pf-blur_strength, --pf-bg_opacity
+ */
+.pf-style-frosted {
+  position: relative;
+  overflow: hidden;
+  outline: var(--pf-outline_width, 1px) solid var(--pf-outline_color, rgba(255,255,255,0.3));
+  border-radius: 8px;
+}
+
+.pf-style-frosted::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(var(--pf-blur_strength, 8px));
+  background: rgba(255,255,255, calc(var(--pf-bg_opacity, 80) / 100));
+  z-index: 1;
+  pointer-events: none;
+}
+
+.pf-style-frosted .pf-track {
+  position: relative;
+  z-index: 2;
+}
+
+.pf-style-frosted .pf-prev,
+.pf-style-frosted .pf-next {
+  z-index: 3;
+}

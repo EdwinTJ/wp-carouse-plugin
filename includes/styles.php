@@ -1,71 +1,162 @@
 <?php
+/**
+ * Style Registry — Auto-discovery for carousel and navigation styles.
+ *
+ * Scans the styles/ directory for self-contained style folders.
+ * Each folder contains a PHP definition file, a CSS file, and an optional JS file.
+ *
+ * Directory structure:
+ *   styles/carousel/{style_key}/{style_key}.php  — required, returns style definition array
+ *   styles/carousel/{style_key}/{style_key}.css  — required, visual styles
+ *   styles/carousel/{style_key}/{style_key}.js   — optional, JS enhancements
+ *   styles/nav/{style_key}/{style_key}.php        — required
+ *   styles/nav/{style_key}/{style_key}.css        — required
+ *
+ * To add a new style: create a folder, drop in the files, done.
+ *
+ * @since 0.1
+ */
 if (!defined('ABSPATH')) exit;
 
 /**
- * Carousel visual style registry.
- * Each style defines a name, description, and configurable options.
- * Options are rendered as admin fields and applied as CSS variables on the frontend.
+ * Scans a directory for style folders and loads their PHP definitions.
+ *
+ * Each subfolder must contain a {folder_name}.php file that returns
+ * an associative array with keys: name, description, tier, options.
+ *
+ * @param  string $directory Absolute path to the styles directory (carousel or nav).
+ * @return array  Associative array of style_key => style_definition.
+ */
+function pf_discover_styles($directory) {
+    $styles = [];
+
+    if (!is_dir($directory)) {
+        return $styles;
+    }
+
+    $folders = glob($directory . '/*', GLOB_ONLYDIR);
+
+    foreach ($folders as $folder) {
+        $key = basename($folder);
+        $php_file = $folder . '/' . $key . '.php';
+
+        if (file_exists($php_file)) {
+            $definition = require $php_file;
+            if (is_array($definition)) {
+                $styles[$key] = $definition;
+            }
+        }
+    }
+
+    return $styles;
+}
+
+/**
+ * Returns all registered carousel visual styles.
+ *
+ * Auto-discovers styles from styles/carousel/ directory.
+ * Each style has: name, description, tier (free|premium), and options.
+ *
+ * @return array Associative array of style_key => style_definition.
  */
 function pf_get_carousel_styles() {
-    return [
-        'default' => [
-            'name' => 'Clean',
-            'description' => 'Minimal, no effects',
-            'options' => []
-        ],
-        'elevated' => [
-            'name' => 'Elevated Shadow',
-            'description' => 'Box shadow with rounded corners',
-            'options' => [
-                'shadow_color'  => ['type' => 'color', 'label' => 'Shadow Color', 'default' => '#00000050'],
-                'shadow_blur'   => ['type' => 'number', 'label' => 'Shadow Blur (px)', 'default' => 20],
-                'shadow_spread' => ['type' => 'number', 'label' => 'Shadow Spread (px)', 'default' => 0],
-                'border_radius' => ['type' => 'number', 'label' => 'Border Radius (px)', 'default' => 12],
-            ]
-        ],
-        'frosted' => [
-            'name' => 'Frosted Glass',
-            'description' => 'Blur overlay with subtle outline',
-            'options' => [
-                'blur_strength' => ['type' => 'number', 'label' => 'Blur Strength (px)', 'default' => 8],
-                'outline_color' => ['type' => 'color', 'label' => 'Outline Color', 'default' => '#ffffff50'],
-                'outline_width' => ['type' => 'number', 'label' => 'Outline Width (px)', 'default' => 1],
-                'bg_opacity'    => ['type' => 'number', 'label' => 'Background Opacity (%)', 'default' => 80],
-            ]
-        ],
-    ];
+    static $cache = null;
+    if ($cache !== null) return $cache;
+
+    $dir = plugin_dir_path(dirname(__FILE__)) . 'styles/carousel';
+    $cache = pf_discover_styles($dir);
+
+    return $cache;
 }
 
 /**
- * Navigation (arrows) style registry.
- * Independent from carousel styles — any nav style works with any carousel style.
+ * Returns all registered navigation (arrow) styles.
+ *
+ * Auto-discovers styles from styles/nav/ directory.
+ * Independent from carousel styles — any nav style pairs with any carousel style.
+ *
+ * @return array Associative array of style_key => style_definition.
  */
 function pf_get_nav_styles() {
-    return [
-        'minimal' => [
-            'name' => 'Minimal Chevron',
-            'description' => 'Simple thin arrows',
-            'options' => [
-                'arrow_size'  => ['type' => 'number', 'label' => 'Arrow Size (px)', 'default' => 24],
-                'arrow_color' => ['type' => 'color', 'label' => 'Arrow Color', 'default' => '#333333'],
-            ]
-        ],
-        'capsule' => [
-            'name' => 'Floating Capsule',
-            'description' => 'Rounded pill-shaped buttons',
-            'options' => [
-                'bg_color'      => ['type' => 'color', 'label' => 'Background Color', 'default' => '#000000aa'],
-                'arrow_color'   => ['type' => 'color', 'label' => 'Arrow Color', 'default' => '#ffffff'],
-                'border_radius' => ['type' => 'number', 'label' => 'Border Radius (px)', 'default' => 24],
-                'padding'       => ['type' => 'number', 'label' => 'Padding (px)', 'default' => 12],
-            ]
-        ],
-    ];
+    static $cache = null;
+    if ($cache !== null) return $cache;
+
+    $dir = plugin_dir_path(dirname(__FILE__)) . 'styles/nav';
+    $cache = pf_discover_styles($dir);
+
+    return $cache;
 }
 
 /**
- * Render HTML inputs for a style's options.
- * Used both for initial PHP render and AJAX field swapping.
+ * Returns the absolute filesystem path to a style's asset directory.
+ *
+ * @param  string $registry  Either 'carousel' or 'nav'.
+ * @param  string $style_key The style folder name (e.g. 'elevated').
+ * @return string Absolute path to the style folder.
+ */
+function pf_get_style_path($registry, $style_key) {
+    return plugin_dir_path(dirname(__FILE__)) . 'styles/' . $registry . '/' . $style_key . '/';
+}
+
+/**
+ * Returns the URL to a style's asset directory.
+ *
+ * @param  string $registry  Either 'carousel' or 'nav'.
+ * @param  string $style_key The style folder name (e.g. 'elevated').
+ * @return string URL to the style folder.
+ */
+function pf_get_style_url($registry, $style_key) {
+    return plugin_dir_url(dirname(__FILE__)) . 'styles/' . $registry . '/' . $style_key . '/';
+}
+
+/**
+ * Enqueues the CSS and optional JS for a specific style.
+ *
+ * Only loads assets for styles actually used on the current page.
+ * Called from the shortcode renderer so each carousel only loads what it needs.
+ *
+ * @param  string $registry  Either 'carousel' or 'nav'.
+ * @param  string $style_key The style folder name (e.g. 'elevated').
+ * @return void
+ */
+function pf_enqueue_style_assets($registry, $style_key) {
+    $path = pf_get_style_path($registry, $style_key);
+    $url  = pf_get_style_url($registry, $style_key);
+
+    $css_file = $path . $style_key . '.css';
+    $js_file  = $path . $style_key . '.js';
+
+    $handle_prefix = 'pf-' . $registry . '-' . $style_key;
+
+    if (file_exists($css_file)) {
+        wp_enqueue_style(
+            $handle_prefix . '-css',
+            $url . $style_key . '.css',
+            [],
+            filemtime($css_file)
+        );
+    }
+
+    if (file_exists($js_file)) {
+        wp_enqueue_script(
+            $handle_prefix . '-js',
+            $url . $style_key . '.js',
+            [],
+            filemtime($js_file),
+            true
+        );
+    }
+}
+
+/**
+ * Renders HTML form inputs for a style's configurable options.
+ *
+ * Generates a WordPress-styled form table with inputs matching each option's type.
+ * Used for both the initial PHP render and AJAX-driven field swapping.
+ *
+ * @param  array $options      Associative array of option_key => option_definition.
+ * @param  array $saved_values Previously saved values to pre-fill inputs.
+ * @return string HTML markup for the options form fields.
  */
 function pf_render_style_options_html($options, $saved_values = []) {
     if (empty($options)) {

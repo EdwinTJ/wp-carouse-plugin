@@ -51,10 +51,13 @@ function pf_carousel_shortcode($atts) {
     $config = is_array($config) ? $config : [];
     $images = $config['images'] ?? [];
 
-    // Build CSS classes from style selections
+    // Build CSS classes from style selections and enqueue only the needed assets
     $carousel_style = $config['carousel_style'] ?? 'default';
     $nav_style = $config['nav_style'] ?? 'minimal';
     $classes = 'pf-carousel pf-style-' . esc_attr($carousel_style) . ' pf-nav-' . esc_attr($nav_style);
+
+    pf_enqueue_style_assets('carousel', $carousel_style);
+    pf_enqueue_style_assets('nav', $nav_style);
 
     // Build inline CSS variables from style options
     $css_vars = [];

@@ -1,0 +1,27 @@
+/**
+ * Navigation Style: Floating Capsule
+ *
+ * Uses CSS custom properties set inline by the shortcode renderer:
+ *   --pf-nav-bg_color, --pf-nav-arrow_color, --pf-nav-border_radius, --pf-nav-padding
+ */
+.pf-nav-capsule .pf-prev,
+.pf-nav-capsule .pf-next {
+  background: var(--pf-nav-bg_color, rgba(0,0,0,0.6));
+  color: var(--pf-nav-arrow_color, #fff);
+  border: none;
+  border-radius: var(--pf-nav-border_radius, 24px);
+  padding: var(--pf-nav-padding, 12px) calc(var(--pf-nav-padding, 12px) * 1.2);
+  font-size: 1rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  transition: background 0.2s, transform 0.2s;
+}
+
+.pf-nav-capsule .pf-prev { left: 16px; }
+.pf-nav-capsule .pf-next { right: 16px; }
+
+.pf-nav-capsule .pf-prev:hover,
+.pf-nav-capsule .pf-next:hover {
+  background: var(--pf-nav-bg_color, rgba(0,0,0,0.8));
+  transform: translateY(-50%) scale(1.05);
+}

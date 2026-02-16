@@ -1,0 +1,35 @@
+/**
+ * Navigation Style: Minimal Chevron
+ *
+ * Uses CSS custom properties set inline by the shortcode renderer:
+ *   --pf-nav-arrow_color, --pf-nav-arrow_size
+ */
+.pf-nav-minimal .pf-prev,
+.pf-nav-minimal .pf-next {
+  background: transparent;
+  color: var(--pf-nav-arrow_color, #333);
+  font-size: var(--pf-nav-arrow_size, 24px);
+  padding: 0;
+  width: var(--pf-nav-arrow_size, 24px);
+  height: var(--pf-nav-arrow_size, 24px);
+  line-height: 1;
+  border: 2px solid var(--pf-nav-arrow_color, #333);
+  border-width: 0 2px 2px 0;
+  display: inline-block;
+}
+
+.pf-nav-minimal .pf-prev {
+  transform: translateY(-50%) rotate(135deg);
+  left: 12px;
+}
+
+.pf-nav-minimal .pf-next {
+  transform: translateY(-50%) rotate(-45deg);
+  right: 12px;
+}
+
+.pf-nav-minimal .pf-prev:hover,
+.pf-nav-minimal .pf-next:hover {
+  background: transparent;
+  opacity: 0.6;
+}
