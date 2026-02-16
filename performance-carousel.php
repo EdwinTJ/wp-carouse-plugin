@@ -68,6 +68,30 @@ add_action('admin_init', function() {
     register_setting('pf_carousel_options_group', 'pf_autoplay_delay');
 });
 
+// Ajax Handler
+add_action('wp_ajax_pf_update_carousel_config', function() {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (!$data) wp_send_json_error();
+
+    $post_id = intval($data['post_id']);
+    $edit_id = sanitize_text_field($data['edit_id']);
+    $autoplay = sanitize_text_field($data['autoplay']);
+    $autoplayDelay = intval($data['autoplayDelay']);
+
+    $meta_key = '_pf_carousel_config_' . $edit_id;
+
+    $config = [
+        'id' => $edit_id,
+        'autoplay' => $autoplay,
+        'autoplayDelay' => $autoplayDelay
+    ];
+
+    update_post_meta($post_id, $meta_key, $config);
+
+    wp_send_json_success();
+});
+
 // Enqueue admin assets
 add_action('admin_enqueue_scripts', function($hook) {
     if ($hook !== 'toplevel_page_pf-carousel-settings') return;
