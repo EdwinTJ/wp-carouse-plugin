@@ -7,6 +7,9 @@
 
 if (!defined('ABSPATH')) exit;
 
+// Load style registries
+require_once plugin_dir_path(__FILE__) . 'includes/styles.php';
+
 // Enqueue frontend assets
 function pf_enqueue_assets() {
     wp_enqueue_script(
@@ -48,12 +51,29 @@ function pf_carousel_shortcode($atts) {
     $config = is_array($config) ? $config : [];
     $images = $config['images'] ?? [];
 
+    // Build CSS classes from style selections
+    $carousel_style = $config['carousel_style'] ?? 'default';
+    $nav_style = $config['nav_style'] ?? 'minimal';
+    $classes = 'pf-carousel pf-style-' . esc_attr($carousel_style) . ' pf-nav-' . esc_attr($nav_style);
+
+    // Build inline CSS variables from style options
+    $css_vars = [];
+    foreach ($config['carousel_style_options'] ?? [] as $key => $val) {
+        $css_vars[] = '--pf-' . esc_attr($key) . ':' . esc_attr($val) . (is_numeric($val) ? 'px' : '');
+    }
+    foreach ($config['nav_style_options'] ?? [] as $key => $val) {
+        $css_vars[] = '--pf-nav-' . esc_attr($key) . ':' . esc_attr($val) . (is_numeric($val) ? 'px' : '');
+    }
+    $inline_style = !empty($css_vars) ? implode(';', $css_vars) : '';
+
     ob_start(); ?>
-    <div class="pf-carousel" data-config='<?php echo json_encode([
-        'slidesToShow'=>1,
-        'autoplay'=>$config['autoplay'] ?? true,
-        'autoplayDelay'=>$config['autoplayDelay'] ?? 2000
-    ]); ?>'>
+    <div class="<?php echo $classes; ?>"
+         <?php if ($inline_style): ?>style="<?php echo $inline_style; ?>"<?php endif; ?>
+         data-config='<?php echo json_encode([
+            'slidesToShow'=>1,
+            'autoplay'=>$config['autoplay'] ?? true,
+            'autoplayDelay'=>$config['autoplayDelay'] ?? 2000
+         ]); ?>'>
         <div class="pf-track">
             <?php
             foreach ($images as $img) {
@@ -94,13 +114,19 @@ add_action('admin_init', function() {
     register_setting('pf_carousel_options_group', 'pf_autoplay_delay');
 });
 
-// AJAX handler for updating carousel config (including images)
+// AJAX handler for updating carousel config (including images and styles)
 add_action('wp_ajax_pf_update_carousel_config', function() {
     $post_id = intval($_POST['post_id']);
     $edit_id = sanitize_text_field($_POST['edit_id']);
     $autoplay = sanitize_text_field($_POST['autoplay']);
     $autoplayDelay = intval($_POST['autoplayDelay']);
     $images = isset($_POST['images']) ? array_map('sanitize_text_field', $_POST['images']) : [];
+
+    // Style data
+    $carousel_style = sanitize_text_field($_POST['carousel_style'] ?? 'default');
+    $nav_style = sanitize_text_field($_POST['nav_style'] ?? 'minimal');
+    $carousel_style_options = isset($_POST['carousel_style_options']) ? array_map('sanitize_text_field', $_POST['carousel_style_options']) : [];
+    $nav_style_options = isset($_POST['nav_style_options']) ? array_map('sanitize_text_field', $_POST['nav_style_options']) : [];
 
     if (!$post_id || !$edit_id) wp_send_json_error();
 
@@ -109,7 +135,11 @@ add_action('wp_ajax_pf_update_carousel_config', function() {
         'id' => $edit_id,
         'autoplay' => $autoplay,
         'autoplayDelay' => $autoplayDelay,
-        'images' => $images
+        'images' => $images,
+        'carousel_style' => $carousel_style,
+        'carousel_style_options' => $carousel_style_options,
+        'nav_style' => $nav_style,
+        'nav_style_options' => $nav_style_options,
     ];
 
     update_post_meta($post_id, $meta_key, $config);
@@ -117,11 +147,32 @@ add_action('wp_ajax_pf_update_carousel_config', function() {
     wp_send_json_success();
 });
 
+// AJAX handler for fetching style-specific option fields
+add_action('wp_ajax_pf_get_style_options_html', function() {
+    $style_key = sanitize_text_field($_POST['style_key'] ?? '');
+    $registry = sanitize_text_field($_POST['registry'] ?? '');
+
+    if ($registry === 'carousel') {
+        $styles = pf_get_carousel_styles();
+    } elseif ($registry === 'nav') {
+        $styles = pf_get_nav_styles();
+    } else {
+        wp_send_json_error('Invalid registry');
+    }
+
+    if (!isset($styles[$style_key])) wp_send_json_error('Invalid style');
+
+    $html = pf_render_style_options_html($styles[$style_key]['options']);
+    wp_send_json_success($html);
+});
+
 // AJAX handler for creating carousel
 add_action('wp_ajax_pf_create_carousel', function() {
     $id = sanitize_text_field($_POST['pf_new_id']);
     $autoplay = sanitize_text_field($_POST['pf_new_autoplay']);
     $autoplayDelay = intval($_POST['pf_new_autoplayDelay']);
+    $carousel_style = sanitize_text_field($_POST['pf_new_carousel_style'] ?? 'default');
+    $nav_style = sanitize_text_field($_POST['pf_new_nav_style'] ?? 'minimal');
 
     if (!$id) wp_send_json_error('Missing ID');
 
@@ -138,7 +189,11 @@ add_action('wp_ajax_pf_create_carousel', function() {
         'id' => $id,
         'autoplay' => $autoplay,
         'autoplayDelay' => $autoplayDelay,
-        'images' => []
+        'images' => [],
+        'carousel_style' => $carousel_style,
+        'carousel_style_options' => [],
+        'nav_style' => $nav_style,
+        'nav_style_options' => [],
     ];
 
     update_post_meta($post_id, $meta_key, $config);

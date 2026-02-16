@@ -110,6 +110,24 @@ jQuery(document).ready(($) => {
         }
     });
     
+    // Style selector change — fetch dynamic fields via AJAX
+    function loadStyleOptions(selectId, targetId, registry) {
+        $(selectId).on('change', function(){
+            const style = $(this).val();
+            $.post(ajaxurl, {
+                action: 'pf_get_style_options_html',
+                style_key: style,
+                registry: registry
+            }, function(res){
+                if(res.success){
+                    $(targetId).html(res.data);
+                }
+            });
+        });
+    }
+    loadStyleOptions('#pf-carousel-style', '#pf-carousel-style-options', 'carousel');
+    loadStyleOptions('#pf-nav-style', '#pf-nav-style-options', 'nav');
+
     // Media Library toggle
     $('#pf-image-source').on('change', function(){
         const val = $(this).val();
@@ -169,13 +187,31 @@ jQuery(document).ready(($) => {
             });
         }
 
+        // Collect style selections and their options
+        const carousel_style = $('#pf-carousel-style').val() || 'default';
+        const nav_style = $('#pf-nav-style').val() || 'minimal';
+
+        let carousel_style_options = {};
+        $('#pf-carousel-style-options input[data-key]').each(function(){
+            carousel_style_options[$(this).data('key')] = $(this).val();
+        });
+
+        let nav_style_options = {};
+        $('#pf-nav-style-options input[data-key]').each(function(){
+            nav_style_options[$(this).data('key')] = $(this).val();
+        });
+
         $.post(ajaxurl, {
             action: 'pf_update_carousel_config',
             post_id: post_id,
             edit_id: edit_id,
             autoplay: autoplay,
             autoplayDelay: autoplayDelay,
-            images: images
+            images: images,
+            carousel_style: carousel_style,
+            nav_style: nav_style,
+            carousel_style_options: carousel_style_options,
+            nav_style_options: nav_style_options
         }, function(res){
             if(res.success){
                 alert('Carousel saved!');

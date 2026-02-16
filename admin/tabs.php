@@ -78,6 +78,26 @@ if (!defined('ABSPATH')) exit;
                     <th>Autoplay Delay</th>
                     <td><input type="number" name="pf_new_autoplayDelay" value="3000" /></td>
                 </tr>
+                <tr>
+                    <th>Carousel Style</th>
+                    <td>
+                        <select name="pf_new_carousel_style">
+                            <?php foreach (pf_get_carousel_styles() as $key => $style): ?>
+                                <option value="<?php echo esc_attr($key); ?>"><?php echo esc_html($style['name']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Navigation Style</th>
+                    <td>
+                        <select name="pf_new_nav_style">
+                            <?php foreach (pf_get_nav_styles() as $key => $style): ?>
+                                <option value="<?php echo esc_attr($key); ?>"><?php echo esc_html($style['name']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                </tr>
             </table>
             <?php submit_button('Create Carousel'); ?>
         </form>

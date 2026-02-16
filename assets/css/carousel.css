@@ -22,6 +22,9 @@
   object-fit: cover;
 }
 
+/* ======================
+   Default nav (unstyled fallback)
+   ====================== */
 .pf-prev,
 .pf-next {
   position: absolute;
@@ -42,4 +45,102 @@
 .pf-prev:hover,
 .pf-next:hover {
   background: rgba(0,0,0,0.7);
+}
+
+/* ======================
+   Carousel Style: Elevated Shadow
+   ====================== */
+.pf-style-elevated {
+  border-radius: var(--pf-border_radius, 12px);
+  overflow: hidden;
+  box-shadow:
+    0 4px var(--pf-shadow_blur, 20px) var(--pf-shadow_spread, 0px) var(--pf-shadow_color, rgba(0,0,0,0.3));
+}
+
+/* ======================
+   Carousel Style: Frosted Glass
+   ====================== */
+.pf-style-frosted {
+  position: relative;
+  overflow: hidden;
+  outline: var(--pf-outline_width, 1px) solid var(--pf-outline_color, rgba(255,255,255,0.3));
+  border-radius: 8px;
+}
+
+.pf-style-frosted::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(var(--pf-blur_strength, 8px));
+  background: rgba(255,255,255, calc(var(--pf-bg_opacity, 80) / 100));
+  z-index: 1;
+  pointer-events: none;
+}
+
+.pf-style-frosted .pf-track {
+  position: relative;
+  z-index: 2;
+}
+
+.pf-style-frosted .pf-prev,
+.pf-style-frosted .pf-next {
+  z-index: 3;
+}
+
+/* ======================
+   Nav Style: Minimal Chevron
+   ====================== */
+.pf-nav-minimal .pf-prev,
+.pf-nav-minimal .pf-next {
+  background: transparent;
+  color: var(--pf-nav-arrow_color, #333);
+  font-size: var(--pf-nav-arrow_size, 24px);
+  padding: 0;
+  width: var(--pf-nav-arrow_size, 24px);
+  height: var(--pf-nav-arrow_size, 24px);
+  line-height: 1;
+  border: 2px solid var(--pf-nav-arrow_color, #333);
+  border-width: 0 2px 2px 0;
+  display: inline-block;
+}
+
+.pf-nav-minimal .pf-prev {
+  transform: translateY(-50%) rotate(135deg);
+  left: 12px;
+}
+
+.pf-nav-minimal .pf-next {
+  transform: translateY(-50%) rotate(-45deg);
+  right: 12px;
+}
+
+.pf-nav-minimal .pf-prev:hover,
+.pf-nav-minimal .pf-next:hover {
+  background: transparent;
+  opacity: 0.6;
+}
+
+/* ======================
+   Nav Style: Floating Capsule
+   ====================== */
+.pf-nav-capsule .pf-prev,
+.pf-nav-capsule .pf-next {
+  background: var(--pf-nav-bg_color, rgba(0,0,0,0.6));
+  color: var(--pf-nav-arrow_color, #fff);
+  border: none;
+  border-radius: var(--pf-nav-border_radius, 24px);
+  padding: var(--pf-nav-padding, 12px) calc(var(--pf-nav-padding, 12px) * 1.2);
+  font-size: 1rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  transition: background 0.2s, transform 0.2s;
+}
+
+.pf-nav-capsule .pf-prev { left: 16px; }
+.pf-nav-capsule .pf-next { right: 16px; }
+
+.pf-nav-capsule .pf-prev:hover,
+.pf-nav-capsule .pf-next:hover {
+  background: var(--pf-nav-bg_color, rgba(0,0,0,0.8));
+  transform: translateY(-50%) scale(1.05);
 }

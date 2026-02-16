@@ -47,6 +47,40 @@ function pf_render_admin_page() {
                 ?></textarea>
             </div>
 
+            <h2>Carousel Style</h2>
+            <?php
+            $carousel_styles = pf_get_carousel_styles();
+            $current_carousel_style = $config['carousel_style'] ?? 'default';
+            $current_carousel_style_options = $config['carousel_style_options'] ?? [];
+            ?>
+            <select id="pf-carousel-style">
+                <?php foreach ($carousel_styles as $key => $style): ?>
+                    <option value="<?php echo esc_attr($key); ?>" <?php selected($current_carousel_style, $key); ?>>
+                        <?php echo esc_html($style['name']); ?> &mdash; <?php echo esc_html($style['description']); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <div id="pf-carousel-style-options">
+                <?php echo pf_render_style_options_html($carousel_styles[$current_carousel_style]['options'] ?? [], $current_carousel_style_options); ?>
+            </div>
+
+            <h2>Navigation Style</h2>
+            <?php
+            $nav_styles = pf_get_nav_styles();
+            $current_nav_style = $config['nav_style'] ?? 'minimal';
+            $current_nav_style_options = $config['nav_style_options'] ?? [];
+            ?>
+            <select id="pf-nav-style">
+                <?php foreach ($nav_styles as $key => $style): ?>
+                    <option value="<?php echo esc_attr($key); ?>" <?php selected($current_nav_style, $key); ?>>
+                        <?php echo esc_html($style['name']); ?> &mdash; <?php echo esc_html($style['description']); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <div id="pf-nav-style-options">
+                <?php echo pf_render_style_options_html($nav_styles[$current_nav_style]['options'] ?? [], $current_nav_style_options); ?>
+            </div>
+
             <h2>Settings</h2>
             <form id="pf-full-config-form">
                 <table class="form-table">
