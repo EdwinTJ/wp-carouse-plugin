@@ -213,6 +213,10 @@ jQuery(document).ready(($) => {
             });
         }
 
+        // Collect navigation settings
+        const nav_placement = $('#pf-nav-placement').val() || 'overlay';
+        const show_dots = $('#pf-show-dots').val() || 'false';
+
         // Collect style selections and their options
         const carousel_style = $('input[name="pf_carousel_style"]:checked').val() || 'default';
         const nav_style = $('input[name="pf_nav_style"]:checked').val() || 'minimal';
@@ -237,7 +241,9 @@ jQuery(document).ready(($) => {
             carousel_style: carousel_style,
             nav_style: nav_style,
             carousel_style_options: carousel_style_options,
-            nav_style_options: nav_style_options
+            nav_style_options: nav_style_options,
+            nav_placement: nav_placement,
+            show_dots: show_dots
         }, function(res){
             if(res.success){
                 window.location.href = `?page=pf-carousel-settings&tab=shortcodes&saved=${encodeURIComponent(edit_id)}`;

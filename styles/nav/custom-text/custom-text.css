@@ -1,0 +1,26 @@
+/**
+ * Navigation Style: Custom Text
+ *
+ * Uses CSS custom properties set inline by the shortcode renderer:
+ *   --pf-nav-text_color, --pf-nav-bg_color, --pf-nav-border_color,
+ *   --pf-nav-font_size, --pf-nav-padding
+ */
+.pf-nav-custom-text .pf-prev,
+.pf-nav-custom-text .pf-next {
+  background: var(--pf-nav-bg_color, #fff);
+  color: var(--pf-nav-text_color, #333);
+  border: 2px solid var(--pf-nav-border_color, #ccc);
+  font-size: calc(var(--pf-nav-font_size, 14) * 1px);
+  padding: calc(var(--pf-nav-padding, 10) * 1px) calc(var(--pf-nav-padding, 10) * 1.5px);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.pf-nav-custom-text .pf-prev:hover,
+.pf-nav-custom-text .pf-next:hover {
+  background: var(--pf-nav-text_color, #333);
+  color: var(--pf-nav-bg_color, #fff);
+}

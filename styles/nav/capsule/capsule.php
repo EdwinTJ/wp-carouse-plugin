@@ -14,6 +14,10 @@ return [
     'name'        => 'Floating Capsule',
     'description' => 'Rounded pill-shaped buttons',
     'tier'        => 'free',
+    'content'     => [
+        'prev_html' => '&#8592;',
+        'next_html' => '&#8594;',
+    ],
     'options'     => [
         'bg_color'      => ['type' => 'color',  'label' => 'Background Color',    'default' => '#000000aa'],
         'arrow_color'   => ['type' => 'color',  'label' => 'Arrow Color',          'default' => '#ffffff'],

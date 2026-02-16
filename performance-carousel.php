@@ -54,10 +54,27 @@ function pf_carousel_shortcode($atts) {
     // Build CSS classes from style selections and enqueue only the needed assets
     $carousel_style = $config['carousel_style'] ?? 'default';
     $nav_style = $config['nav_style'] ?? 'minimal';
+    $nav_placement = $config['nav_placement'] ?? 'overlay';
+    $show_dots = ($config['show_dots'] ?? 'false') === 'true';
+
     $classes = 'pf-carousel pf-style-' . esc_attr($carousel_style) . ' pf-nav-' . esc_attr($nav_style);
+    $wrap_classes = 'pf-carousel-wrap pf-placement-' . esc_attr($nav_placement);
 
     pf_enqueue_style_assets('carousel', $carousel_style);
     pf_enqueue_style_assets('nav', $nav_style);
+
+    // Get nav button content from the style definition
+    $nav_styles = pf_get_nav_styles();
+    $nav_def = $nav_styles[$nav_style] ?? [];
+    $prev_html = $nav_def['content']['prev_html'] ?? 'Prev';
+    $next_html = $nav_def['content']['next_html'] ?? 'Next';
+
+    // For custom-text style, override with user-saved text
+    $nav_opts = $config['nav_style_options'] ?? [];
+    if ($nav_style === 'custom-text') {
+        if (!empty($nav_opts['prev_text'])) $prev_html = esc_html($nav_opts['prev_text']);
+        if (!empty($nav_opts['next_text'])) $next_html = esc_html($nav_opts['next_text']);
+    }
 
     // Build inline CSS variables from style options
     $css_vars = [];
@@ -69,28 +86,51 @@ function pf_carousel_shortcode($atts) {
     }
     $inline_style = !empty($css_vars) ? implode(';', $css_vars) : '';
 
+    $dots_html = '';
+    if ($show_dots && count($images) > 1) {
+        $dots_html = '<div class="pf-dots">';
+        for ($i = 0; $i < count($images); $i++) {
+            $active = $i === 0 ? ' active' : '';
+            $dots_html .= '<button class="pf-dot' . $active . '" type="button" data-index="' . $i . '"></button>';
+        }
+        $dots_html .= '</div>';
+    }
+
     ob_start(); ?>
-    <div class="<?php echo $classes; ?>"
-         <?php if ($inline_style): ?>style="<?php echo $inline_style; ?>"<?php endif; ?>
-         data-config='<?php echo json_encode([
-            'slidesToShow'=>1,
-            'autoplay'=>$config['autoplay'] ?? true,
-            'autoplayDelay'=>$config['autoplayDelay'] ?? 2000
-         ]); ?>'>
-        <div class="pf-track">
-            <?php
-            foreach ($images as $img) {
-                if (is_numeric($img)) {
-                    $url = wp_get_attachment_url($img);
-                } else {
-                    $url = esc_url($img);
+    <div class="<?php echo $wrap_classes; ?>">
+        <div class="<?php echo $classes; ?>"
+             <?php if ($inline_style): ?>style="<?php echo $inline_style; ?>"<?php endif; ?>
+             data-config='<?php echo json_encode([
+                'slidesToShow'=>1,
+                'autoplay'=>$config['autoplay'] ?? true,
+                'autoplayDelay'=>$config['autoplayDelay'] ?? 2000,
+                'showDots'=>$show_dots
+             ]); ?>'>
+            <div class="pf-track">
+                <?php
+                foreach ($images as $img) {
+                    if (is_numeric($img)) {
+                        $url = wp_get_attachment_url($img);
+                    } else {
+                        $url = esc_url($img);
+                    }
+                    echo '<div class="pf-slide"><img src="'. $url .'" /></div>';
                 }
-                echo '<div class="pf-slide"><img src="'. $url .'" /></div>';
-            }
-            ?>
+                ?>
+            </div>
+            <?php if ($nav_placement === 'overlay' || $nav_placement === 'split-side'): ?>
+            <button class="pf-prev" type="button"><?php echo $prev_html; ?></button>
+            <button class="pf-next" type="button"><?php echo $next_html; ?></button>
+            <?php echo $dots_html; ?>
+            <?php endif; ?>
         </div>
-        <button class="pf-prev" type="button">Prev</button>
-        <button class="pf-next" type="button">Next</button>
+        <?php if ($nav_placement === 'below' || $nav_placement === 'above'): ?>
+        <div class="pf-nav-bar">
+            <button class="pf-prev" type="button"><?php echo $prev_html; ?></button>
+            <button class="pf-next" type="button"><?php echo $next_html; ?></button>
+        </div>
+        <?php endif; ?>
+        <?php if ($nav_placement !== 'overlay' && $nav_placement !== 'split-side') echo $dots_html; ?>
     </div>
     <?php
 
@@ -131,6 +171,10 @@ add_action('wp_ajax_pf_update_carousel_config', function() {
     $carousel_style_options = isset($_POST['carousel_style_options']) ? array_map('sanitize_text_field', $_POST['carousel_style_options']) : [];
     $nav_style_options = isset($_POST['nav_style_options']) ? array_map('sanitize_text_field', $_POST['nav_style_options']) : [];
 
+    // Navigation config
+    $nav_placement = sanitize_text_field($_POST['nav_placement'] ?? 'overlay');
+    $show_dots = sanitize_text_field($_POST['show_dots'] ?? 'false');
+
     if (!$post_id || !$edit_id) wp_send_json_error();
 
     $meta_key = '_pf_carousel_config_' . $edit_id;
@@ -143,6 +187,8 @@ add_action('wp_ajax_pf_update_carousel_config', function() {
         'carousel_style_options' => $carousel_style_options,
         'nav_style' => $nav_style,
         'nav_style_options' => $nav_style_options,
+        'nav_placement' => $nav_placement,
+        'show_dots' => $show_dots,
     ];
 
     update_post_meta($post_id, $meta_key, $config);
@@ -197,6 +243,8 @@ add_action('wp_ajax_pf_create_carousel', function() {
         'carousel_style_options' => [],
         'nav_style' => $nav_style,
         'nav_style_options' => [],
+        'nav_placement' => 'overlay',
+        'show_dots' => 'false',
     ];
 
     update_post_meta($post_id, $meta_key, $config);

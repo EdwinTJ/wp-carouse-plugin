@@ -113,6 +113,7 @@ return [
 | `name`        | string | Yes      | Display name shown in admin dropdowns |
 | `description` | string | Yes      | Short description shown next to the name |
 | `tier`        | string | Yes      | `'free'` or `'premium'` |
+| `content`     | array  | Nav only | Nav styles only. Defines `prev_html` and `next_html` — the markup rendered inside the prev/next buttons. Falls back to `'Prev'`/`'Next'` text if omitted. |
 | `options`     | array  | Yes      | Configurable fields (can be empty `[]`) |
 
 #### Option field definition
@@ -317,6 +318,10 @@ return [
     'name'        => 'Circle',
     'description' => 'Round circular arrow buttons',
     'tier'        => 'free',
+    'content'     => [
+        'prev_html' => '&#8592;',
+        'next_html' => '&#8594;',
+    ],
     'options'     => [
         'bg_color'    => ['type' => 'color',  'label' => 'Background Color', 'default' => '#000000'],
         'arrow_color' => ['type' => 'color',  'label' => 'Arrow Color',      'default' => '#ffffff'],
@@ -368,7 +373,7 @@ Nav styles use the `.pf-nav-{style_key}` prefix and target `.pf-prev` / `.pf-nex
 Use this checklist every time you add a style:
 
 - [ ] Folder created: `styles/{carousel|nav}/{style_key}/`
-- [ ] PHP file returns an array with `name`, `description`, `tier`, `options`
+- [ ] PHP file returns an array with `name`, `description`, `tier`, `options` (and `content` for nav styles)
 - [ ] PHP file has `if (!defined('ABSPATH')) exit;` guard
 - [ ] PHP file has PHPDoc block with `@since` and `@return` tags
 - [ ] CSS file uses `.pf-style-{key}` (carousel) or `.pf-nav-{key}` (nav) class prefix
@@ -415,10 +420,11 @@ For nav styles, the variable prefix is `--pf-nav-` instead of `--pf-`.
 
 ### Navigation Styles
 
-| Key       | Name              | Tier | Has JS | Options |
-|-----------|-------------------|------|--------|---------|
-| `minimal` | Minimal Chevron   | free | No     | arrow_size, arrow_color |
-| `capsule` | Floating Capsule  | free | No     | bg_color, arrow_color, border_radius, padding |
+| Key           | Name              | Tier | Has JS | Content          | Options |
+|---------------|-------------------|------|--------|------------------|---------|
+| `minimal`     | Minimal Chevron   | free | No     | CSS chevron spans | arrow_size, arrow_color |
+| `capsule`     | Floating Capsule  | free | No     | ← → arrows       | bg_color, arrow_color, border_radius, padding |
+| `custom-text` | Custom Text       | free | No     | User-defined text | prev_text, next_text, text_color, bg_color, border_color, font_size, padding |
 
 ---
 

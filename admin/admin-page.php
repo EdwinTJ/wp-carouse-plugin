@@ -18,6 +18,8 @@ function pf_render_admin_page() {
         $current_carousel_style_options = $config['carousel_style_options'] ?? [];
         $current_nav_style = $config['nav_style'] ?? 'minimal';
         $current_nav_style_options = $config['nav_style_options'] ?? [];
+        $current_nav_placement = $config['nav_placement'] ?? 'overlay';
+        $current_show_dots = $config['show_dots'] ?? 'false';
 
         ?>
         <div class="wrap">
@@ -92,6 +94,36 @@ function pf_render_admin_page() {
                 <div id="pf-carousel-style-options" class="pf-style-options-panel">
                     <?php echo pf_render_style_options_html($carousel_styles[$current_carousel_style]['options'] ?? [], $current_carousel_style_options); ?>
                 </div>
+            </div>
+
+            <!-- Navigation Settings Section -->
+            <div class="pf-config-section">
+                <h2>Navigation Settings</h2>
+                <p class="description">Controls where navigation elements appear and which indicators are shown.</p>
+                <table class="form-table">
+                    <tr>
+                        <th>Arrow Placement</th>
+                        <td>
+                            <select name="pf_nav_placement" id="pf-nav-placement">
+                                <option value="overlay" <?php selected($current_nav_placement, 'overlay'); ?>>Overlay on Images</option>
+                                <option value="below" <?php selected($current_nav_placement, 'below'); ?>>Below Carousel</option>
+                                <option value="above" <?php selected($current_nav_placement, 'above'); ?>>Above Carousel</option>
+                                <option value="split-side" <?php selected($current_nav_placement, 'split-side'); ?>>Split Side (Outside)</option>
+                            </select>
+                            <p class="description">Where the previous/next arrows are positioned relative to the carousel.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Dot Indicators</th>
+                        <td>
+                            <select name="pf_show_dots" id="pf-show-dots">
+                                <option value="true" <?php selected($current_show_dots, 'true'); ?>>Enabled</option>
+                                <option value="false" <?php selected($current_show_dots, 'false'); ?>>Disabled</option>
+                            </select>
+                            <p class="description">Show clickable dot indicators for each slide.</p>
+                        </td>
+                    </tr>
+                </table>
             </div>
 
             <!-- Navigation Style Section -->

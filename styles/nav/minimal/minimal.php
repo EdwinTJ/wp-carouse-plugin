@@ -14,6 +14,10 @@ return [
     'name'        => 'Minimal Chevron',
     'description' => 'Simple thin arrows',
     'tier'        => 'free',
+    'content'     => [
+        'prev_html' => '<span class="pf-chevron-left"></span>',
+        'next_html' => '<span class="pf-chevron-right"></span>',
+    ],
     'options'     => [
         'arrow_size'  => ['type' => 'number', 'label' => 'Arrow Size (px)',  'default' => 24],
         'arrow_color' => ['type' => 'color',  'label' => 'Arrow Color',      'default' => '#333333'],
