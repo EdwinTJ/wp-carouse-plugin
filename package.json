@@ -4,12 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && npm run minify:assets",
+    "minify:assets": "node scripts/minify-assets.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "vite": "^7.3.1"
+  },
+  "devDependencies": {
+    "clean-css": "^5.3.3",
+    "terser": "^5.27.2"
   }
 }
